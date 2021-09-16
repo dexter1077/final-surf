@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<context:component-scan base-package="com.kh.surf" />
+	
+	<interceptors>
+		<interceptor>
+			<mapping path="/myPage.me"/>
+			<mapping path="/deleteView.me"/>
+			<mapping path="/delete.me"/>
+			<mapping path="/updateInfo.do"/>
+			<mapping path="/updatePwd.do"/>
+			<mapping path="/report.sb"/>
+			<mapping path="/enrollForm.sb"/>
+			<mapping path="/scrapList.lec"/>
+			<mapping path="/myLecture.lec"/>
+			<mapping path="/lectureVideoList.le"/>
+			<mapping path="/order.mem"/>
+			<mapping path="/enrollTeacher.tea"/>
+			
+			<!-- header에서 찜하기 | 내클래스 가는 url 다 추가해야됨!! 
+			<mapping path="/enrollForm.bo"/>
+			 -->
+			<beans:bean id="loginInterceptor" class="com.kh.surf.common.interceptor.LoginInterceptor"/>
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/updateForm.te"/>
+			<mapping path="/classReview.te"/>
+			<mapping path="/reviewDetail.te"/>
+			<mapping path="/classInquiry.te"/>
+			<mapping path="/inquiryDetail.te"/>
+			<mapping path="/studyStats.te"/>
+			<mapping path="/surveyStats.te"/>
+			<mapping path="/monthlyStatsView.te"/>
+			<mapping path="/lectureList.te"/>
+			<mapping path="/lectureInput.te"/>
+			<beans:bean id="teacherInterceptor" class="com.kh.surf.common.interceptor.TeacherInterceptor"/>
+		</interceptor>
+		
+		<interceptor>
+			<mapping path="/list.bo"/>
+			<mapping path="/pmList.ad"/>
+			<mapping path="/memList.ad"/>
+			<mapping path="/settleList.ad"/>
+			<mapping path="/lectureList.ad"/>
+			<mapping path="/fundingList.ad"/>
+			<mapping path="/login.ad"/>
+			<mapping path="/lectureDetail.ad"/>
+			<mapping path="/updateForm.ad"/>
+			<mapping path="/lecSearch.ad"/>
+			<mapping path="/updateForm.ad"/>
+			<mapping path="/insert.ad"/>
+			<!-- 여기부터 정연님꺼 -->
+			<mapping path="/noticeList.ad"/>
+			<mapping path="/enrollNotice.ad"/>
+			<mapping path="/insertNotice.ad"/>
+			<mapping path="/detailNotice.ad"/>
+			<mapping path="/deleteNotice.ad"/>
+			<mapping path="/updateFormNotice.ad"/>
+			<mapping path="/reportList.ad"/>
+			<mapping path="/updateB.ad"/>
+			<mapping path="/updateR.ad"/>
+			<beans:bean id="AdminInterceptor" class="com.kh.surf.common.interceptor.AdminInterceptor"/>
+		</interceptor>
+	</interceptors>
+	
+</beans:beans>

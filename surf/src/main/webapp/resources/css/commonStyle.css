@@ -1,0 +1,65 @@
+
+
+	/*회원쪽 페이지 작업하면서 적용한 공통 스타일 입니다.(최서경)*/
+
+       .body-outer{
+       /* border: blue solid 1px;*/
+        width: 1200px;
+        margin: auto;
+        overflow: auto;
+       }
+
+    /*회원가입*/
+    .easyJoin{
+        width:45%;
+    }
+
+	/*선이랑 선 사이에 글자 넣기 (로그인 팝업의 '간편로그인'처럼)*/
+    .hr-sect {
+        display: flex;
+        flex-basis: 100%;
+        align-items: center;
+        color: rgba(0, 0, 0, 0.35);
+        font-size: 12px;
+        margin: 8px 0px;
+    }
+    .hr-sect::before,
+    .hr-sect::after {
+        content: "";
+        flex-grow: 1;
+        background: rgba(0, 0, 0, 0.35);
+        height: 1px;
+        font-size: 0px;
+        line-height: 0px;
+        margin: 0px 16px;
+    }
+
+    /*소제목 스타일*/
+    .sm-title{
+        width: 450px; 
+        /*border: purple solid 1px; */
+        margin: auto; 
+        font-size: 25px; 
+        font-weight: bolder;
+
+    }
+
+    /*소제목 긴거 스타일*/
+    .long-title{
+        width: 800px; 
+        /*border: purple solid 1px; */
+        margin: auto; 
+        font-size: 25px; 
+        font-weight: bolder;
+    }
+
+    /*스터디게시판 작성자 정보 스타일*/
+    .writerInfo {
+        font-size: 12px;
+        margin-left: 10px;
+        margin-top: 5px;
+        color: rgb(94, 94, 94);
+    }
+
+
+    

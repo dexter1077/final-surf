@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="categoryMapper">
+	<resultMap id="maincatResult" type="Maincat">
+		<result column="maincat_no" property="maincatNo"/>
+		<result column="maincat_name" property="maincatName"/>
+	</resultMap>
+
+	<resultMap id="subcatResult" type="SubCat">
+		<result column="subcat_no" property="subcatNo"/>
+		<result column="subcat_name" property="subcatName"/>
+		<result column="maincat_no" property="maincatNo"/>
+	</resultMap>
+
+	<resultMap type="subCat" id="subCatResult">
+		<result column="subcat_no" property="subCatNo"/>
+		<result column="subcat_name" property="subCatName"/>
+		<result column="maincat_no" property="mainCatNo"/>
+	</resultMap>
+
+	<select id="selectCategory" resultType="string">
+		select
+		    maincat_name|| ',' || listagg(subcat_no|| '-' ||subcat_name, ',') within group (order by subcat_name) category
+		  from
+		    (
+		    select maincat_name, subcat_name, subcat_no
+		      from maincat
+		      join subcat using (maincat_no)
+		     order
+		        by maincat_name
+		    )
+		 group
+		    by maincat_name
+	</select>
+
+
+	<select id="selectSubCat" resultMap="subCatResult">
+		select
+		       subcat_no
+		     , subcat_name
+		  from subcat
+	</select>
+
+	<!--
+		강의 등록하기 0페이지
+		메인 카테고리 조회 | 메인카테고리 번호로 서브카테고리 조회
+		@author HeeRak
+	 -->
+	<select id="AjaxSelectMaincatList" resultMap="maincatResult">
+		select maincat_no
+		     , maincat_name
+		  from maincat
+		 order
+		    by maincat_no asc
+	</select>
+	<select id="AjaxSelectSubcatList" resultMap="subcatResult">
+		select subcat_no
+			 , subcat_name
+			 , maincat_no
+		  from subcat
+		 where maincat_no = #{maincatNo}
+		 order
+		    by subcat_no asc
+	</select>
+	
+	<select id="selectSubCategory" resultMap="subcatResult">
+		select 
+			   subcat_no
+			 , subcat_name
+			 , maincat_no
+		  from subcat
+		  order
+		    by subcat_no asc
+	</select>
+
+
+</mapper>

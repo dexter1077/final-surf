@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mainMapper">
+	
+	<resultMap id="adResult" type="Ad">
+		<result column="ad_no" property="adNo"/>
+		<result column="ad_title" property="adTitle"/>
+		<result column="ad_link" property="adLink"/>
+		<result column="modify_Date" property="modifyDate"/>
+		<result column="ad_status" property="adStatus"/>
+		<result column="origin_name" property="originName"/>
+		<result column="change_name" property="changeName"/>
+		<result column="upload_date" property="uploadDate"/>
+		<result column="count" property="count"/>
+	</resultMap>
+	
+	<resultMap id="lectureResult" type="Lecture">
+		<result column="class_no" property="classNo"/>
+		<result column="class_title" property="classTitle"/>
+		<result column="thumbnail" property="thumbnail"/>
+		<result column="price" property="classPrice"/>
+		<result column="nickname" property="teacherName"/>
+		<result column="score" property="score"/>
+		<result column="scrapCount" property="scrapCount"/>
+	</resultMap>
+	
+	<resultMap id="studyResult" type="Study">
+		<result column="study_no" property="studyNo"/>
+		<result column="study_title" property="studyTitle"/>
+		<result column="study_content" property="studyContent"/>
+		<result column="user_no" property="userNo"/>
+		<result column="nickname" property="writer"/>
+		<result column="recruit" property="recruit"/>
+		<result column="status" property="status"/>
+		<result column="count" property="count"/>
+		<result column="create_date" property="createDate"/>
+		<result column="modify_date" property="modifyDate"/>
+	</resultMap>
+	
+	<resultMap id="classFundingResult" type="ClassFunding">
+		<result column="class_no" property="classNo"/>
+		<result column="standard" property="standard"/>
+		<result column="count" property="count"/>
+		<result column="start_date" property="startDate"/>
+		<result column="class_title" property="classTitle"/>
+		<result column="thumbnail" property="thumbnail"/>
+	</resultMap>
+	
+	<select id="selectMainAdList" resultMap="adResult">
+		select 
+		       ad_no
+		     , ad_link
+		     , change_name
+		  from ad
+		 where ad_status = 'Y'
+		 order by modify_date
+		        , upload_date
+	</select>
+	
+	<select id="selectRecomClassList" resultMap="lectureResult">
+		select 
+		       class_no
+		     , class_title
+		     , thumbnail
+		     , to_char(price, '999,999,999')||'원' as price
+		     , nickname
+		     , 찜수 as scrapCount
+		     , trim(평점평균) as score
+		from (
+		select 
+		       l.class_no
+		     , class_title
+		     , thumbnail
+		     , price
+		     , nickname
+		     , count as 찜수
+		     , to_char(round(average, 1), '999.9') as 평점평균
+		     , count2 as 수강생수
+		     , rank() over(order by count desc nulls last) as 찜순위
+		     , rank() over(order by average desc nulls last) as 평점순위
+		     , rank() over(order by count2 desc nulls last) as 수강생순위
+		  from lecture l
+		  join teacher t on(l.user_no = t.teacher_no)
+		  left join (select
+		                   class_no
+		                 , count(*) as count
+		              from scrap_support
+		             where type = 'S'
+		             group by class_no) s on(l.class_no = s.class_no)
+		  left join (select
+		                   class_no
+		                  , avg(score) as average
+		              from survey
+		             group by class_no) s2 on(l.class_no = s2.class_no)
+		  left join (select
+		                   class_no
+		                 , count(*) as count2
+		              from payment
+		             where status = 'Y'
+		               and refund_status = 'N'
+		             group by class_no) p on(l.class_no = p.class_no)
+		 where l.status = 'O'
+		 <choose>
+		 	<when test="condition == 1">
+				 order by 찜순위, 평점순위, 수강생순위)
+		 	</when>
+		 	<when test="condition == 2">
+				 order by 평점순위, 찜순위, 수강생순위)
+		 	</when>
+		 	<otherwise>
+				 order by 수강생순위, 찜순위, 평점순위)
+		 	</otherwise>
+		 </choose>
+		 <![CDATA[where rownum <= 4]]>
+	</select>
+	
+	<select id="selectPostList" resultMap="studyResult">
+		select *
+		  from (
+		        select
+		               study_no
+		             , study_title
+		             , substr(study_content, instr(study_content, '▶', 1, 6)) as study_content
+		             , nickname
+		             , to_char(create_date, 'YY. MM. DD') as create_date
+		          from study s
+		          join member m on(s.user_no = m.user_no)
+		         where recruit = 'Y'
+		           and s.status = 'Y'
+		         order by study_no desc)
+		<![CDATA[where rownum <= 4]]>
+	</select>
+	
+	<select id="selectFundingList" resultMap="classFundingResult">
+		select *
+		  from (
+		        select
+				       f.class_no
+				     , standard
+				     , count
+				     , l.class_title
+				     , l.thumbnail
+				  from class_funding f
+				  join lecture l on(f.class_no = l.class_no)
+				 <![CDATA[where standard > count]]>
+				   and l.status = 'F'
+				 order by dbms_random.value)
+		 <![CDATA[where rownum <= 5]]>
+	</select>
+	
+</mapper>

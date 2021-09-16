@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="adminBoardMapper">
+
+	<resultMap id="adminBoardResult" type="AdminBoard">
+		<result column="board_no" property="boardNo"/>
+		<result column="board_title" property="boardTitle"/>
+		<result column="nickname" property="nickname"/>
+		<result column="count" property="count"/>
+		<result column="create_date" property="createDate"/>
+		<result column="board_type" property="boardType"/>
+		<result column="faq_category" property="faqCategory"/>
+		<result column="board_content" property="boardContent"/>
+		<result column="user_no" property="userNo"/>
+		<result column="status" property="status"/>
+	</resultMap>
+
+	<resultMap id="adminTeacherResult" type="Teacher">
+		<result column="teacher_no" property="teacherNo"/>
+		<result column="profile_image" property="profileImage"/>
+		<result column="nickname" property="nickname"/>
+		<result column="email" property="email"/>
+		<result column="phone" property="phone"/>
+		<result column="intro_content" property="introContent"/>
+		<result column="subcat_name" property="subCatName"/>
+		<result column="maincat_name" property="mainCatName"/>		
+		<result column="status" property="status"/>
+	</resultMap>
+	
+
+
+
+	<!--
+		공지사항 리스트 페이지 조회수용
+		@author 서정연 관리자
+	-->	
+	<select id="selectNoticeCount" resultType="_int">
+		select
+		       count(*)
+		  from admin_board
+		 where board_type = '공지사항'
+		   and status = 'Y'
+	</select>
+
+	<!--
+		공지사항 리스트 페이지 조회용
+		@author 서정연 관리자
+	-->	
+	<select id="selectNoticeList" resultMap="adminBoardResult">
+		select
+		       board_no
+		     , board_title
+		     , nickname
+		     , count
+		     , to_char(create_date, 'YYYY-MM-DD') as create_date
+		  from admin_board a
+          join member m on m.user_no = a.user_no
+		 where board_type = '공지사항'
+		   and a.status = 'Y'
+		 order
+		    by board_no desc
+	</select>
+
+	<!--
+		공지사항 글작성용
+		@author 서정연 관리자
+	-->		
+	<insert id="insertAdminNotice">
+		insert
+		  into admin_board
+		  (
+		    board_no
+		  , board_title
+		  , user_no
+		  , board_content
+		  , board_type
+		  )
+		  values
+		  (
+		    seq_nno.nextval
+		  , #{boardTitle}
+		  , #{userNo}
+		  , #{boardContent}
+		  , '공지사항'
+		  )
+	</insert>
+
+	<!--
+		공지사항 상세조회수용
+		@author 서정연 관리자
+	-->		
+	<update id="increaseCountNotice">
+		update
+		       admin_board
+		   set count = count+1
+		 where board_no = #{boardNo}
+		   and board_type = '공지사항'
+		   and status = 'Y'
+	</update>
+	
+	<!--
+		공지사항 상세조회용
+		@author 서정연 관리자
+	-->	
+	<select id="selectAdminNotice" resultMap="adminBoardResult">
+		select
+		       board_no
+		     , board_title
+		     , nickname
+		     , board_content
+		     , to_char(create_date, 'YYYY-MM-DD') as create_date
+		     , count
+		  from admin_board a
+          join member m on m.user_no = a.user_no
+		 where board_no = #{boardNo}
+	</select>
+
+	<!--
+		공지사항 글삭제용
+		@author 서정연 관리자
+	-->		
+	<update id="deleteAdminNotice">
+		update
+		       admin_board
+		   set status = 'N'
+		 where board_no = #{boardNo}
+	</update>
+
+	<!--
+		공지사항 글수정용
+		@author 서정연 관리자
+	-->		
+	<update id="updateAdminNotice">
+		update
+			   admin_board
+		   set board_title = #{boardTitle}
+		     , board_content = #{boardContent}
+		 where board_no = #{boardNo}
+	</update>
+
+	<!--
+		공지사항 리스트 검색 카운트
+		@author 서정연 관리자
+	-->		
+	<select id="selectSearchNoticeCount" resultType="_int">
+		select
+		       count(*)
+		  from
+		  (select
+			       board_no
+			     , board_title
+			     , nickname
+			     , board_content
+			     , count
+			     , to_char(create_date, 'YYYY-MM-DD') as create_date
+			     , board_content
+			  from admin_board a
+	          join member m on m.user_no = a.user_no
+			 where board_type = '공지사항'
+			   and a.status = 'Y')
+             where
+		   <choose>
+			   <when test="condition == 'writer'">
+			   		nickname
+			   </when>
+			   <when test="condition == 'title'">
+			   		board_title
+			   </when>
+			   <otherwise>
+			   		board_content
+			   </otherwise>
+		   </choose>
+					like '%' || #{keyword} || '%'
+	</select>
+
+	<!--
+		공지사항 리스트 검색용
+		@author 서정연 관리자
+	-->		
+	<select id="selectSearchNoticeList" resultMap="adminBoardResult">
+		select
+		       board_no
+		     , board_title
+		     , nickname
+		     , board_content
+		     , count
+		     , to_char(create_date, 'YYYY-MM-DD') as create_date
+		     , board_content
+		  from admin_board a
+          join member m on m.user_no = a.user_no
+         where board_type = '공지사항'
+		   and a.status = 'Y'
+		 <choose>
+		   		<when test="condition == 'writer'">
+		   			and nickname
+		   		</when>
+		   		<when test="condition == 'title'">
+		   			and board_title 
+		   		</when>
+		   		<otherwise>
+		   			and board_content
+		   		</otherwise>
+		   </choose>
+		   			like '%' || #{keyword} || '%'
+	</select>
+	
+	
+	<!--
+		FAQ 리스트 페이지 조회수용
+		@author 서정연 관리자
+	-->	
+	<select id="selectFaqCount" resultType="_int">
+		select
+		       count(*)
+		  from admin_board
+		 where board_type = 'FAQ'
+		   and status = 'Y'
+	</select>
+
+	<!--
+		FAQ 리스트 페이지 조회용
+		@author 서정연 관리자
+	-->		
+	<select id="selectFaqList" resultMap="adminBoardResult">
+		select
+		       board_no
+             , faq_category
+		     , board_title
+             , board_content
+		  from admin_board
+		 where board_type = 'FAQ'
+		   and status = 'Y'
+		 order
+		    by board_no desc
+	</select>
+
+	<!--
+		FAQ 글작성용
+		@author 서정연 관리자
+	-->	
+	<insert id="insertAdminFaq">
+		insert
+		  into admin_board
+		  (
+		    board_no
+		  , board_title
+		  , user_no
+		  , board_content
+		  , board_type
+		  , faq_category
+		  )
+		  values
+		  (
+		    seq_nno.nextval
+		  , #{boardTitle}
+		  , #{userNo}
+		  , #{boardContent}
+		  , 'FAQ'
+		  , #{faqCategory}
+		  )
+	</insert>
+
+	<!--
+		FAQ 글삭제용
+		@author 서정연 관리자
+	-->		
+	<update id="deleteAdminFaq">
+		update
+		       admin_board
+		   set status = 'N'
+		 where board_no = #{boardNo}
+	</update>
+
+	<!--
+		FAQ 글수정용
+		@author 서정연 관리자
+	-->		
+	<update id="updateAdminFaq">
+		update
+			   admin_board
+		   set board_title = #{boardTitle}
+		     , board_content = #{boardContent}
+		     , faq_category = #{faqCategory}
+		 where board_no = #{boardNo}
+	</update>	
+
+	<!--
+		FAQ 리스트 페이지 조회용
+		@author 서정연 관리자
+	-->		
+	<select id="selectTeacherList" resultMap="adminTeacherResult">
+		select
+			   teacher_no
+			 , t.nickname
+			 , phone
+         	 , s.subcat_name
+			 , c.maincat_name
+             , t.status
+		  from teacher t
+          join subcat s using(subcat_no)
+          join member m on t.nickname=m.nickname
+          join maincat c using(maincat_no)
+         order
+		    by teacher_no desc
+	</select>
+	
+	<!--
+		FAQ 상세페이지 조회용
+		@author 서정연 관리자
+	-->		
+	<select id="selectTeacher" resultMap="adminTeacherResult">
+		select
+		       teacher_no
+             , profile_image 
+		     , email
+			 , t.nickname
+             , phone
+             , intro_content
+			 , c.maincat_name
+         	 , s.subcat_name
+		  from teacher t
+          join subcat s using(subcat_no)
+          join member m on t.nickname=m.nickname
+          join maincat c using(maincat_no)
+         where teacher_no = #{tno}
+	</select>
+	
+	<!--
+		강사신청 리스트 페이지 조회수용
+		@author 서정연 관리자
+	-->	
+	<select id="selectTeacherCount" resultType="_int">
+		select
+		       count(*)
+		  from teacher
+		 where status = 'Y'  
+	</select>
+
+	<!--
+		강사신청 승인
+		@author 서정연 관리자
+	-->		
+	<update id="updateYes">
+		update
+		       teacher
+		   set status = 'Y'
+		 where teacher_no = #{teacherNo}
+	</update>
+		
+	<!--
+		강사신청 반려
+		@author 서정연 관리자
+	-->		
+	<update id="updateNo">
+		update
+		       teacher
+		   set status = 'N'
+		 where teacher_no = #{teacherNo}
+	</update>
+	
+	
+	<!-- 강사신청 검색기능 -->
+	<select id="teacherListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM (select
+			   teacher_no
+			 , t.nickname
+			 , phone
+         	 , s.subcat_name
+			 , c.maincat_name
+             , t.status
+		  from teacher t
+          join subcat s using(subcat_no)
+          join member m on t.nickname=m.nickname
+          join maincat c using(maincat_no)
+		      where
+	 		<choose>
+	 		<when test="condition == 'big'">
+	 			c.maincat_name
+	 		</when>
+	 		<when test="condition == 'smail'">
+	 			s.subcat_name
+	 		</when>
+	 		<otherwise>
+	 			t.nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%')
+	</select>
+	
+	<select id="selectSearchTeacherList" resultMap="adminTeacherResult">
+		select
+		       
+			   teacher_no
+			 , t.nickname
+			 , phone
+         	 , s.subcat_name
+			 , c.maincat_name
+             , t.status
+		  from teacher t
+          join subcat s using(subcat_no)
+          join member m on t.nickname=m.nickname
+          join maincat c using(maincat_no)
+		  where
+		<choose>
+	 		<when test="condition == 'big'">
+	 			c.maincat_name
+	 		</when>
+	 		<when test="condition == 'smail'">
+	 			s.subcat_name
+	 		</when>
+	 		<otherwise>
+	 			t.nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	<!-- FAQ관리 검색기능 -->
+	<select id="faqListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM (select
+		       board_no
+             , faq_category
+		     , board_title
+             , board_content
+		  from admin_board
+		 where board_type = 'FAQ'
+		   and status = 'Y'
+	 		<choose>
+	 		<when test="condition == 'category'">
+	 			and faq_category
+	 		</when>
+	 		<otherwise>
+	 			and board_title
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%')
+	</select>
+	
+	<select id="selectSearchFaqList" resultMap="adminBoardResult">
+		select
+		       board_no
+             , faq_category
+		     , board_title
+             , board_content
+		  from admin_board
+		 where board_type = 'FAQ'
+		   and status = 'Y'
+	 		<choose>
+	 		<when test="condition == 'category'">
+	 			and faq_category
+	 		</when>
+	 		<otherwise>
+	 			and board_title
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+</mapper>

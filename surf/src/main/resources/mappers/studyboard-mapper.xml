@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="studyboardMapper">
+
+	<resultMap type="Study" id="resultStudy">
+		<result column="study_no" property="studyNo"/>
+		<result column="study_title" property="studyTitle"/>
+		<result column="study_content" property="studyContent"/>
+		<result column="user_no" property="userNo"/>
+		<result column="nickname" property="writer"/>
+		<result column="recruit" property="recruit"/>
+		<result column="status" property="status"/>
+		<result column="count" property="count"/>
+		<result column="create_date" property="createDate"/>
+		<result column="modify_date" property="modifyDate"/>
+	</resultMap>
+	
+	<resultMap type="Reply" id="resultReply">
+		<result column="reply_no" property="replyNo"/>
+		<result column="study_no" property="studyNo"/>
+		<result column="user_no" property="userNo"/>
+		<result column="nickname" property="replyWriter"/>
+		<result column="reply_content" property="replyContent"/>
+		<result column="status" property="status"/>
+		<result column="create_date" property="createDate"/>
+		<result column="modify_date" property="modifyDate"/>
+	</resultMap>
+	
+	<resultMap id="adminReportResult" type="Report">
+		<result column="report_no" property="reportNo"/>
+		<result column="reporter" property="reporter"/>
+		<result column="reported" property="reported"/>
+		<result column="ref_type" property="refType"/>
+		<result column="ref_no" property="refNo"/>
+		<result column="report_content" property="reportContent"/>
+		<result column="report_date" property="reportDate"/>
+		<result column="reporter_id" property="reporterId"/>
+		<result column="reported_id" property="reportedId"/>		
+		<result column="reply_content" property="replyContent"/>
+		<result column="study_content" property="studyContent"/>
+		<result column="status" property="status"/>
+	</resultMap>
+
+	<select id="selectListCount" resultType="_int">
+		select count(*)
+		  from study
+		 where status = 'Y'
+		 <if test='recruit == "YY"'>
+		 	and recruit = 'Y'
+		 </if>		   
+		 <if test='recruit == "NN"'>
+			 and recruit = 'N'
+		 </if>	
+	</select>
+
+
+	<select id="selectList" resultMap="resultStudy">
+		select
+			  study_no
+			, study_title
+			, study_content
+			, nickname
+			, recruit
+			, s.status
+			, count
+			, to_char(create_date, 'YY. mm. dd.') "create_date"
+			, to_char(modify_date, 'YY. mm. dd.') "modify_date"
+		  from study s
+		  join member using(user_no)
+	 left join (select * from report where ref_type = '게시글') p on(ref_no = study_no)
+		 where s.status = 'Y'
+		    and (p.status is null or p.status = 'R')
+		 <if test='recruit == "YY"'>
+		 	and recruit = 'Y'
+		 </if>		   
+		 <if test='recruit == "NN"'>
+			 and recruit = 'N'
+		 </if>			
+		 <if test="keyword != ''">
+		  	 and (study_title like '%'||#{keyword}||'%' or study_content like '%'||#{keyword}||'%')
+		 </if>
+		 order
+		    by study_no desc
+	</select>
+	
+	<update id="increaseCount">
+		update
+			study
+		   set count = count + 1
+		 where study_no = #{studyNo}
+	</update>
+	
+	<select id="selectStudy" resultMap="resultStudy">
+		select
+			  study_no	
+			, study_title
+			, study_content
+			, user_no
+			, nickname
+			, recruit
+			, count
+			, to_char(create_date, 'YY. mm. dd.') "create_date"
+		  from study s
+		  join member using(user_no)
+		 where study_no = #{studyNo}
+	</select>
+	
+	<insert id="insertStudy">
+		insert
+		  into study
+		  (
+		    study_no
+		  , study_title
+		  , study_content
+		  , user_no
+		  , recruit
+		  , create_date
+		  )
+		  values
+		  (
+		    seq_sno.nextval
+		  , #{studyTitle}
+		  , #{studyContent}
+		  , #{userNo}
+		  , 'Y'
+		  , sysdate
+		  )
+	</insert>
+	
+	<update id="updateStudy">
+		update
+			study
+		   set study_title = #{studyTitle}
+		  	 , study_content = #{studyContent}
+		     , recruit = #{recruit}
+		     , modify_date = #{modifyDate}
+		 where study_no = #{studyNo}
+	</update>
+	
+	<update id="deleteStudy">
+		update
+			study
+		   set status = 'N'
+		 where study_no = #{studyNo}
+	</update>
+	
+	<select id="selectReplyList" resultMap="resultReply">
+		select
+		      reply_no
+		    , user_no
+		    , nickname
+		    , reply_content
+		    , to_char(create_date, 'YY. mm. dd.') "create_date"
+		  from reply r
+		  join member using(user_no)
+	 left join 
+	          (select * 
+	             from report 
+	            where ref_type = '댓글') p 
+	        on(reply_no = ref_no)
+		 where study_no = #{studyNo}
+		   and r.status = 'Y'
+		   and (p.status is null or p.status = 'R')		    
+		 order
+		    by reply_no desc
+				    
+	</select>
+	
+	<insert id="insertReply">
+		insert 
+		  into reply
+		  (
+		    reply_no
+		  , study_no
+		  , user_no
+		  , reply_content
+		  , create_date
+		  ) 
+		  values 
+		  (
+		    seq_rno.nextval
+		  , #{studyNo}
+		  , #{replyWriter}
+		  , #{replyContent}
+		  , sysdate
+		  )
+	</insert>
+	
+	<insert id="insertReport">
+		insert
+		  into report
+		  (
+		    report_no
+		  , reporter
+		  , reported
+		  , ref_type
+		  , ref_no
+		  , report_content
+		  , report_date
+		  , status
+		  )
+		  values
+		  (
+		    seq_pno.nextval
+		  , #{reporter}
+		  , #{reported}
+		  , #{refType}
+		  , #{refNo}
+		  , #{reportContent}
+		  , sysdate
+		  , 'N'
+		  )
+	</insert>
+	
+	<update id="deleteReply">
+		update
+				reply
+		   set status = 'N'
+		 where reply_no = #{rno}
+	</update>
+	
+	<update id="updateReply">
+		update
+				reply
+		   set reply_content = #{replyContent}
+		 where reply_no = #{replyNo}
+	</update>
+	
+	<!--
+		신고관리 리스트 페이지 조회수용
+		@author 서정연 관리자
+	-->	
+	<select id="selectReportCount" resultType="_int">
+		select
+		       count(*)
+		  from report
+		 where status = 'N'
+	</select>
+	
+	<select id="selectReportList" resultMap="adminReportResult">
+		SELECT 
+		       report_no
+		     , REPORTER_ID
+		     , REPORTED_ID
+		     , ref_type
+		     , REF_NO
+		     , report_content
+		     , to_char(report_date, 'YYYY-MM-DD') as report_date
+		     , A.STATUS
+		     , S.STUDY_CONTENT
+		     , r.reply_content
+		  FROM 
+			 (
+			  select  
+				      report_no
+				    , m.email "REPORTER_ID"
+				    , b.email "REPORTED_ID"
+				    , ref_type
+				    , REF_NO
+				    , report_content
+				    , report_date
+				    , p.status STATUS
+			    from report p
+			    join reply on (ref_no = reply_no)
+			    join member m on (p.reporter = m.user_no)
+			    join member b on (p.reported = b.user_no)
+			   where ref_type = '댓글'
+			   union
+			  select  
+				      report_no
+				    , m.email "REPORTER_ID"
+				    , b.email "REPORTED_ID"
+				    , ref_type
+				    , REF_NO
+				    , report_content
+				    , report_date
+				    , p.status STATUS
+			    from report p
+			    join study on (ref_no = study_no)
+			    join member m on (p.reporter = m.user_no)
+			    join member b on (p.reported = b.user_no)     
+			   where ref_type = '게시글'
+			  ) A
+	LEFT JOIN STUDY S ON (A.REF_NO = S.STUDY_NO)
+	LEFT JOIN REPLY R ON (A.REF_NO = R.REPLY_NO)
+		ORDER 
+		   BY REPORT_NO DESC
+	</select>
+	
+		
+	<update id="updateBlind">
+		update
+			   report
+		   set status = 'B'
+		 where report_no = #{reportNo}
+	</update>
+	
+		
+	<update id="updateRejection">
+		update
+			   report
+		   set status = 'R'
+		 where report_no = #{reportNo}
+	</update>
+	
+	<!-- 신고 검색기능 -->
+	<select id="reportListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM (select
+		       report_no
+		     , reporter
+		     , reported
+		     , ref_type
+		     , report_content
+		     , to_char(report_date, 'YYYY-MM-DD') as report_date
+             , status
+          from report
+         where status ='N'
+	 		<choose>
+	 		<when test="condition == 'category'">
+	 			and ref_type
+	 		</when>
+	 		<otherwise>
+	 			and report_content
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%')
+	</select>
+	
+	<select id="selectSearchReportList" resultMap="adminReportResult">
+		select
+		       report_no
+		     , reporter
+		     , reported
+		     , ref_type
+		     , report_content
+		     , to_char(report_date, 'YYYY-MM-DD') as report_date
+             , status
+          from report
+         where status ='N'
+	 		<choose>
+	 		<when test="condition == 'category'">
+	 			and ref_type
+	 		</when>
+	 		<otherwise>
+	 			and report_content
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+

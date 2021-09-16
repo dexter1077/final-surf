@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="memberMapper">
+
+	<resultMap type="Member" id="memberResult">
+		<result column="user_no" property="userNo"/>
+		<result column="email" property="email"/>
+		<result column="gender" property="gender"/>
+		<result column="age_range" property="ageRange"/>
+		<result column="password" property="password"/>
+		<result column="nickname" property="nickname"/>
+		<result column="user_code" property="userCode"/>
+		<result column="status" property="status"/>
+		<result column="mem_enrolldate" property="memEnrollDate"/>
+		<result column="enroll_type" property="enrollType"/>
+	</resultMap>
+
+
+	<select id="loginMember" resultMap="memberResult">
+		select
+			  user_no
+			, email
+			, gender
+			, age_range
+			, password
+			, nickname
+			, user_code
+			, status
+			, mem_enrolldate
+			, enroll_type
+		  from member
+		 where status = 'N'
+		   and email = #{ email }
+		   and enroll_type = #{enrollType}
+	</select>
+	
+	<insert id="insertMember">
+		insert 
+	  	  into member
+	            	(
+	              	  user_no
+	            	, email
+	            	, gender
+	            	, age_range
+	            	, password
+	            	, nickname
+	            	, user_code
+	            	, status
+	            	, mem_enrolldate
+	            	, enroll_type
+	            	)
+	           values
+	            	(
+	            	  SEQ_UNO.NEXTVAL
+	            	, #{email}
+	            	, #{gender}
+	            	, #{ageRange}
+	            	, #{password}
+	            	, #{nickname}
+	            	, 'M'
+	            	, 'N'
+	            	, sysdate
+	            	, #{enrollType}
+	            	)
+	</insert>
+	
+	<select id="idCheck" resultType="_int">
+		select 
+				count(*)
+		  from member
+		 where email = #{email}
+		   and enroll_type = #{enrollType}
+	</select>
+	
+	<select id="statusCheck" resultType="string">
+		select
+				status
+		  from member
+		 where email = #{email}
+		   and enroll_type = #{enrollType}
+		 
+	</select>
+	
+	<update id="updateMemInfo">
+		update 
+		    member
+		   set nickname = #{nickname}
+		     , gender = #{gender}
+		     , age_range = #{ageRange}
+		 where email = #{email}
+	</update>
+	
+	<update id="updateMemPwd">
+		update 
+		    member
+		   set password = #{password}
+		 where email = #{email}
+	</update>	
+	
+	<update id="deleteMember">
+		update
+			member
+		   set status = 'Y'
+		 where user_no = #{userNo}
+	</update>
+	
+
+
+</mapper>

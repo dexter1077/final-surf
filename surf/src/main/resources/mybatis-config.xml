@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd" >
+
+<configuration>
+
+	<settings>
+		<setting name="jdbcTypeForNull" value="NULL"/>
+	</settings>
+
+	<typeAliases>
+		<typeAlias type="com.kh.surf.member.model.vo.Member" alias="Member"/>
+		<typeAlias type="com.kh.surf.admin.model.vo.Ad" alias="Ad"/>
+		<typeAlias type="com.kh.surf.admin.model.vo.LectureList" alias="LectureList"/>
+		<typeAlias type="com.kh.surf.teacher.model.vo.Teacher" alias="Teacher"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.Survey" alias="Survey"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.MonthlyStats" alias="MonthlyStats"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.Lecture" alias="Lecture"/>
+		<typeAlias type="com.kh.surf.payment.model.vo.Payment" alias="Payment"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.Progress" alias="Progress"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassStuding" alias="Studing"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ScrapSupport" alias="ScrapSupport"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassInquiry" alias="ClassInquiry"/>
+		<typeAlias type="com.kh.surf.adminBoard.model.vo.AdminBoard" alias="AdminBoard"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassVideo" alias="ClassVideo"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.Chapter" alias="Chapter"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassIntro" alias="ClassIntro"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassStuding" alias="ClassStuding"/>
+		<typeAlias type="com.kh.surf.admin.model.vo.PaymentList" alias="PaymentList"/>
+		<typeAlias type="com.kh.surf.teacher.model.vo.StatsData" alias="StatsData"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassIntro" alias="ClassIntro"/>
+		<typeAlias type="com.kh.surf.studyBoard.model.vo.Study" alias="Study"/>
+		<typeAlias type="com.kh.surf.studyBoard.model.vo.Reply" alias="Reply"/>
+		<typeAlias type="com.kh.surf.category.model.vo.Maincat" alias="Maincat"/>
+		<typeAlias type="com.kh.surf.category.model.vo.Subcat" alias="Subcat"/>
+		<typeAlias type="com.kh.surf.studyBoard.model.vo.Report" alias="Report"/>
+		<typeAlias type="com.kh.surf.lecture.model.vo.ClassFunding" alias="ClassFunding"/>
+	</typeAliases>
+
+	<mappers>
+		<mapper resource="/mappers/member-mapper.xml"/>
+		<mapper resource="/mappers/admin-mapper.xml"/>
+		<mapper resource="/mappers/teacher-mapper.xml"/>
+		<mapper resource="/mappers/adminboard-mapper.xml"/>
+		<mapper resource="/mappers/category-mapper.xml"/>
+		<mapper resource="/mappers/payment-mapper.xml"/>
+		<mapper resource="/mappers/lecture-mapper.xml"/>
+		<mapper resource="/mappers/studyboard-mapper.xml"/>
+		<mapper resource="/mappers/main-mapper.xml"/>
+	</mappers>
+
+
+</configuration>

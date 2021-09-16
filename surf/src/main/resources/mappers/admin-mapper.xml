@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="adminMapper">
+
+	<resultMap id="memberResult" type="Member">
+		<result column="user_no" property="userNo"/>
+		<result column="email" property="email"/>
+		<result column="gender" property="gender"/>
+		<result column="age_range" property="ageRange"/>
+		<result column="password" property="password"/>
+		<result column="nickname" property="nickname"/>
+		<result column="user_code" property="userCode"/>
+		<result column="status" property="status"/>
+		<result column="mem_enrolldate" property="memEnrollDate"/>
+		<result column="enroll_type" property="enrollType"/>
+	</resultMap>
+	
+	<resultMap id="adResult" type="Ad">
+		<result column="ad_no" property="adNo"/>
+		<result column="ad_title" property="adTitle"/>
+		<result column="ad_link" property="adLink"/>
+		<result column="modify_Date" property="modifyDate"/>
+		<result column="ad_status" property="adStatus"/>
+		<result column="origin_name" property="originName"/>
+		<result column="change_name" property="changeName"/>
+		<result column="upload_date" property="uploadDate"/>
+		<result column="count" property="count"/>
+	</resultMap>
+	
+	<resultMap id="selectAd" type="Ad">
+		<result column="ad_no" property="adNo"/>
+		<result column="ad_title" property="adTitle"/>
+		<result column="ad_link" property="adLink"/>
+		<result column="origin_name" property="originName"/>
+		<result column="change_name" property="changeName"/>
+		<result column="upload_date" property="uploadDate"/>
+	</resultMap>
+	
+	<resultMap id="pmResult" type="PaymentList">
+		<result column="order_no" property="orderNo"/>
+		<result column="class_no" property="classNo"/>
+		<result column="user_no" property="userNo"/>
+		<result column="price" property="price"/>
+		<result column="PAYMENT_DATE" property="paymentDate"/>
+		<result column="PAY_METHOD" property="payMethod"/>
+		<result column="STATUS" property="status"/>
+		<result column="REFUND_STATUS" property="refundStatus"/>
+		<result column="REFUND_DATE" property="refundDate"/>
+		<result column="REFUND_REASON" property="refundReason"/>
+		<result column="count" property="count"/>
+		<result column="EMAIL" property="email"/>
+		<result column="NICKNAME" property="nickname"/>
+		<result column="class_title" property="classTitle"/>
+		<result column="mon" property="mon"/>
+	</resultMap>
+	
+	<resultMap id="rectureResult" type="LectureList">
+		<result column="teacher_no" property="teacherNo"/>
+		<result column="email" property="email"/>
+		<result column="nickname" property="nickname"/>
+		<result column="maincat_name" property="maincatName"/>
+		<result column="create_date" property="createDate"/>
+		<result column="status" property="status"/>
+		<result column="class_no" property="classNo"/>
+		<result column="subcat_no" property="subcatNo"/>
+		<result column="maincat_no" property="maincatNo"/>
+		<result column="INTRO_TITLE" property="introTitle"/>
+		<result column="STANDARD" property="standard"/>
+		<result column="COUNT" property="count"/>
+		<result column="START_DATE" property="startDate"/>
+	</resultMap>
+	
+	<resultMap id="lectureResult" type="Lecture">
+  		<result column="class_no" property="classNo"/>
+  		<result column="class_title" property="classTitle"/>
+  		<result column="create_date" property="createDate"/>
+  		<result column="thumbnail" property="thumbnail"/>
+  		<result column="intro_file" property="introFile"/>
+  		<result column="intro_title" property="introTitle"/>
+  		<result column="intro_content" property="introContent"/>
+  		<result column="status" property="status"/>
+  		<result column="period" property="period"/>
+  		<result column="need" property="need"/>
+  		<result column="note" property="note"/>
+  		<result column="pos_term" property="posTerm"/>
+  		<result column="price" property="price"/>
+  		<result column="subcat_no" property="subcatNo"/>
+  		<result column="user_no" property="userNo"/>
+		<result column="count" property="fundingCount"/>
+		<result column="nickname" property="teacherName"/>
+		<result column="subcat_name" property="subCat"/>
+		<result column="maincat_name" property="mainCat"/>
+		<result column="scrap" property="scrapCount"/>
+		<result column="students" property="students"/>  	
+		<result column="star" property="star"/>
+		<result column="surveyCount" property="surveyCount"/>
+	</resultMap>
+	
+	<select id="selectAdmin" resultMap="memberResult">
+		SELECT
+            USER_NO,
+            EMAIL,
+            GENDER,
+            AGE_RANGE,
+            PASSWORD,
+            NICKNAME,
+            USER_CODE,
+            STATUS,
+            MEM_ENROLLDATE,
+            ENROLL_TYPE
+     FROM   MEMBER
+    WHERE   user_no = #{userNo}
+      AND   status = 'N'
+      AND	user_code = 'A'
+	</select>
+	
+	<select id="selectLectureDetail" parameterType="Lecture" resultMap="lectureResult">
+	 	select class_no
+			 , class_title
+			 , create_date
+			 , thumbnail
+			 , intro_file
+			 , intro_title
+			 , intro_content
+			 , status
+			 , period
+			 , need
+			 , note
+			 , pos_term
+			 , price
+			 , subcat_no
+		  from lecture
+		 where class_no = #{classNo}
+		   and status != 'D'
+	 </select>
+	
+	<select id="selectLectureListCount" resultType="_int">
+		select
+		       count(*)
+		  from (SELECT
+		        EMAIL
+		    ,   TEACHER_NO
+		    ,   T.NICKNAME
+		    ,   MAINCAT_NAME
+		    ,   CREATE_DATE
+		    ,   L.STATUS
+		    ,	CLASS_NO
+		    ,	INTRO_TITLE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.status != 'D'
+		    and L.status != 'F')
+	</select>
+	
+	<!-- 클래스등록관리 페이징 -->
+	<select id="selectLectureList" resultMap="rectureResult">
+	SELECT
+		        EMAIL
+		    ,   TEACHER_NO
+		    ,   T.NICKNAME
+		    ,   MAINCAT_NAME
+		    ,   CREATE_DATE
+		    ,   L.STATUS
+		    ,	CLASS_NO
+		    ,	INTRO_TITLE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.status != 'D'
+		    and L.status != 'F'
+    </select>
+	
+	<insert id="insertAd">
+		insert
+			into ad
+			(
+				AD_NO
+			,	AD_TITLE
+			,	AD_LINK
+			,	ORIGIN_NAME
+			,	CHANGE_NAME
+			)
+			values
+			(
+				seq_fno.nextval
+			  , #{adTitle}
+			  , #{adLink}
+			  , #{originName}
+			  , #{changeName}
+		  )
+	</insert>
+	
+	<select id="selectListCount" resultType="_int">
+		select
+		       count(*)
+		  from ad
+	</select>
+	
+	<select id="selectPmListCount" resultType="_int">
+		select
+		       count(*)
+		  from (select P.USER_NO
+		      , EMAIL
+		      , NICKNAME
+		      , PAYMENT_DATE
+		      , P.PRICE
+		      , P.CLASS_NO
+		      , P.STATUS
+		      FROM PAYMENT P
+		      JOIN MEMBER M
+		      ON P.USER_NO = M.USER_NO
+		      JOIN LECTURE L
+		      ON P.CLASS_NO = L.CLASS_NO)
+	</select>
+	
+	<select id="selectList" resultMap="adResult">
+		select
+		        AD_NO
+			,	AD_TITLE
+			,	AD_LINK
+			,	MODIFY_DATE
+			,	AD_STATUS
+			,	ORIGIN_NAME
+			,	CHANGE_NAME
+			,	UPLOAD_DATE
+			,	COUNT
+		  from  ad
+		 order
+		    by ad_no desc
+	</select>
+	<!-- 결제내역조회 -->
+	<select id="selectPmList" resultMap="pmResult">
+		SELECT 
+		        P.USER_NO
+		      , EMAIL
+		      , NICKNAME
+		      , PAYMENT_DATE
+		      , P.PRICE
+		      , P.CLASS_NO
+		      , P.STATUS
+		      FROM PAYMENT P
+		      JOIN MEMBER M
+		      ON P.USER_NO = M.USER_NO
+		      JOIN LECTURE L
+		      ON P.CLASS_NO = L.CLASS_NO
+		      order
+		   		 by P.USER_NO desc
+	</select>
+	<!-- 광고 상세조회 -->
+	<update id="increaseCount">
+		update
+		       ad
+		   set count = count+1
+		 where ad_no = #{adNo}
+	</update>
+	<select id="selectAd" resultMap="selectAd">
+		select
+				Ad_NO
+			,	AD_TITLE
+			,	AD_LINK
+			,	ORIGIN_NAME
+			,	CHANGE_NAME
+			,	UPLOAD_DATE
+		FROM 	AD
+		WHERE	AD_NO = #{adNo}
+	</select>
+	
+	<select id="selectMemList" resultMap="memberResult">
+		select
+				USER_NO
+			  ,	EMAIL
+			  ,	NICKNAME
+			  ,	STATUS
+			  , MEM_ENROLLDATE
+		  FROM	MEMBER
+		 WHERE	STATUS = 'N'
+	
+	</select>
+	<select id="selectMemListCount" resultType="_int">
+		select
+		       COUNT(*)
+		  from MEMBER
+		  WHERE	STATUS = 'N'
+	</select>
+	
+	
+	<!-- 게시물 선택 삭제  -->
+    <delete id="delete">
+        delete from ad
+        where ad_no=#{adNo}
+    </delete>
+    
+    <!-- 광고베너 표시  -->
+    <update id="update">
+        update
+		       ad
+		   set ad_status = 'Y'
+		 where ad_no = #{adNo}
+    </update>
+    
+    <!-- 회원 탈퇴  -->
+    <update id="userUpdate">
+        update
+		       member
+		   set status = 'Y'
+		 where user_no = #{userNo}
+    </update>
+    
+    <!-- 클래스등록관리 -->
+    <update id="approvalUpdate">
+        update
+		       lecture
+		   set status = 'O'
+		 where class_no = #{classNo}
+    </update>
+    <update id="companionUpdate">
+        update
+		       lecture
+		   set status = 'R'
+		 where class_no = #{classNo}
+    </update>
+    <update id="DeleteUpdate">
+        update
+		       lecture
+		   set status = 'D'
+		  where class_no = #{classNo}
+    </update>
+    <update id="fundingUpdate">
+        update
+		       lecture
+		   set status = 'Q'
+		  where class_no = #{classNo}
+    </update>
+    
+    <!-- 광고 수정 -->
+    <update id="updateAd">
+    	update
+    			ad
+    		set	ad_title = #{adTitle}
+    		  ,	ad_link	= #{adLink}
+    		  , origin_name = #{originName}
+    		  , change_name = #{changeName}
+    	  where	ad_no = #{adNo}
+    </update>
+    <!-- 광고베너관리 검색기능 -->
+	<select id="selectSearchListCount" resultType="_int">
+		select
+		       count(*)
+		  from ad
+		  where
+	 	<choose>
+	 		<when test="condition == 'title'">
+	 			ad_title
+	 		</when>
+	 		<otherwise>
+	 			ad_link
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	<select id="selectSearchList" resultMap="adResult">
+		select
+		       ad_no
+		     , ad_title
+		     , ad_link
+		     , count
+		     , origin_name
+		     , modify_Date
+		     , ad_status
+		     , UPLOAD_DATE
+		  from ad
+		  where
+		 <choose>
+	 		<when test="condition == 'title'">
+	 			ad_title
+	 		</when>
+	 		<otherwise>
+	 			ad_link
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+		 order
+		    by ad_no desc
+	</select>
+	
+	<!--  -->
+	<select id="selectSearchListMemCount" resultType="_int">
+		select
+		       count(*)
+		  from MEMBER
+		 WHERE	STATUS = 'N'
+	 	<choose>
+	 		<when test="condition == 'id'">
+	 			and email
+	 		</when>
+	 		<otherwise>
+	 			and nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	<select id="selectSearchMemList" resultMap="memberResult">
+		select
+				USER_NO
+			  ,	EMAIL
+			  ,	NICKNAME
+			  ,	STATUS
+			  , MEM_ENROLLDATE
+		  FROM	MEMBER
+		  where STATUS = 'N'
+		 <choose>
+	 		<when test="condition == 'id'">
+	 			and email
+	 		</when>
+	 		<otherwise>
+	 			and nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	
+	<!-- 결제내역관리 검색기능 -->
+	<select id="selectSearchPayListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM (SELECT
+		      P.USER_NO
+		      , email
+		      , NICKNAME
+		      , PAYMENT_DATE
+		      , P.PRICE
+		      , P.CLASS_NO
+		      , P.STATUS
+		      FROM PAYMENT P
+		      JOIN MEMBER M
+		      ON P.USER_NO = M.USER_NO
+		      JOIN LECTURE L
+		      ON P.CLASS_NO = L.CLASS_NO
+		      where
+	 		<choose>
+	 		<when test="condition == 'id'">
+	 			email
+	 		</when>
+	 		<otherwise>
+	 			nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%')
+		  
+	 		
+	</select>
+	
+	<select id="selectSearchPayList" resultMap="pmResult">
+		select
+		        P.USER_NO
+		      , email
+		      , NICKNAME
+		      , PAYMENT_DATE
+		      , P.PRICE
+		      , P.CLASS_NO
+		      , P.STATUS
+		      FROM PAYMENT P
+		      JOIN MEMBER M
+		      ON P.USER_NO = M.USER_NO
+		      JOIN LECTURE L
+		      ON P.CLASS_NO = L.CLASS_NO
+		  where
+		 <choose>
+	 		<when test="condition == 'id'">
+	 			email
+	 		</when>
+	 		<otherwise>
+	 			nickname
+	 		</otherwise>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	
+	<!-- 결제내역관리 검색기능 -->
+	<select id="selectLecSearchListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM 
+		      (select
+		        
+		        EMAIL
+		    ,   TEACHER_NO
+		    ,   T.NICKNAME
+		    ,   MAINCAT_NAME
+		    ,   CREATE_DATE
+		    ,   L.STATUS
+		    ,	CLASS_NO
+		    ,	INTRO_TITLE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    WHERE T.STATUS = 'Y')
+		      where
+	 		<choose>
+	 		<when test="condition == 'title'">
+	 			intro_title
+	 		</when>
+	 		<when test="condition == 'id'">
+	 			email
+	 		</when>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	 		
+	</select>
+	<!-- 클래스등록관리 검색기능 -->
+	<select id="selectLecSearchList" resultMap="rectureResult">
+		select
+		        
+		        EMAIL
+		    ,   TEACHER_NO
+		    ,   T.NICKNAME
+		    ,   MAINCAT_NAME
+		    ,   CREATE_DATE
+		    ,   L.STATUS
+		    ,	CLASS_NO
+		    ,	INTRO_TITLE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    JOIN CLASS_FUNDING F
+		    ON L.CLASS_NO = F.CLASS_NO
+		    WHERE T.STATUS = 'Y'
+		 <choose>
+	 		<when test="condition == 'title'">
+	 			and intro_title
+	 		</when>
+	 		<when test="condition == 'id'">
+	 			and email
+	 		</when>
+	 		</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	
+	<select id="selectFunList" resultMap="rectureResult">
+		select
+		        
+		        TEACHER_NO
+		    ,   L.STATUS
+		    ,	F.CLASS_NO
+		    ,	INTRO_TITLE
+            ,   STANDARD
+            ,   COUNT
+            ,   START_DATE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    JOIN CLASS_FUNDING F
+		    ON L.CLASS_NO = F.CLASS_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.STATUS = 'F'
+	
+	</select>
+	<select id="selectFunListCount" resultType="_int">
+		select
+		       COUNT(*)
+		  from (select
+		        TEACHER_NO
+		    ,   L.STATUS
+		    ,	F.CLASS_NO
+		    ,	INTRO_TITLE
+            ,   STANDARD
+            ,   COUNT
+            ,   START_DATE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    JOIN CLASS_FUNDING F
+		    ON L.CLASS_NO = F.CLASS_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.STATUS = 'F')
+	</select>
+	
+	<!-- 결제내역관리 검색기능 -->
+	<select id="selectFunSearchListCount" resultType="_int">
+		select
+		       	   count(*)
+		      FROM 
+		      (select
+		        
+		        TEACHER_NO
+		    ,   L.STATUS
+		    ,	F.CLASS_NO
+		    ,	INTRO_TITLE
+            ,   STANDARD
+            ,   COUNT
+            ,   START_DATE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    JOIN CLASS_FUNDING F
+		    ON L.CLASS_NO = F.CLASS_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.STATUS = 'F')
+		      where
+	 		<choose>
+	 		<when test="condition == 'title'">
+	 			intro_title
+	 		</when>
+	 	</choose>
+	 		like '%' || #{keyword} || '%'
+	 		
+	</select>
+	<select id="selectFunSearchList" resultMap="rectureResult">
+		select
+		        
+		        TEACHER_NO
+		    ,   L.STATUS
+		    ,	F.CLASS_NO
+		    ,	INTRO_TITLE
+            ,   STANDARD
+            ,   COUNT
+            ,   START_DATE
+		    FROM TEACHER T
+		    JOIN MEMBER M
+		    ON T.TEACHER_NO = USER_NO
+		    JOIN LECTURE L
+		    ON T.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN SUBCAT S
+		    ON S.SUBCAT_NO = L.SUBCAT_NO
+		    JOIN MAINCAT A
+		    ON S.MAINCAT_NO = A.MAINCAT_NO
+		    JOIN CLASS_FUNDING F
+		    ON L.CLASS_NO = F.CLASS_NO
+		    WHERE T.STATUS = 'Y'
+		    and L.STATUS = 'F'
+		 <choose>
+	 		<when test="condition == 'title'">
+	 			and intro_title
+	 		</when>
+	 		</choose>
+	 		like '%' || #{keyword} || '%'
+	</select>
+	<select id="settleList" resultMap="pmResult">
+	select 
+	         p.user_no
+	      ,  nickname
+	      ,  class_title
+	      ,  payment_date
+          ,  p.status
+	      ,  TO_CHAR(TO_DATE(payment_date, 'YYYY-MM-DD HH24:MI:SS') + INTERVAL '1' MONTH, 'YYYY-MM-DD') AS MON
+	      ,  p.class_no
+	      ,  email
+	      from  payment p
+	      join  member m
+	      on p.user_no = m.user_no
+	      join  lecture l
+	      on p.class_no = l.class_no
+	</select>
+	<select id="settleListCount" resultType="_int">
+	select
+			count(*)
+		from (select 
+	         p.user_no
+	      ,  nickname
+	      ,  class_title
+	      ,  payment_date
+          ,  p.status
+	      ,  TO_CHAR(TO_DATE(payment_date, 'YYYY-MM-DD HH24:MI:SS') + INTERVAL '1' MONTH, 'YYYY-MM-DD') AS MON
+	      ,  p.class_no
+	      ,  email
+	      from  payment p
+	      join  member m
+	      on p.user_no = m.user_no
+	      join  lecture l
+	      on p.class_no = l.class_no)
+	</select>
+</mapper>
